@@ -20,6 +20,7 @@ host.defineMidiPorts(1,0);
 
 // set to 1 to enable console logging
 var enableDebugLogging = 1;
+var launcher=1; 
 
 var nanoPAD2;
 
@@ -55,23 +56,25 @@ function onMidi(status, data1, data2) {
     if (status == 0x90) {
         nanoPAD2.updateLastNotePlayed(data1);
         var noteMapping = nanoPAD2.gridLocationForNote(data1);
-        log("handling note on for note number " + data1 + " grid location: row="
+        log("note number " + data1 + " ON: grid location: row="
             + noteMapping.r + ", col=" + noteMapping.c);
         
-        var trackClip = nanoPAD2.playstateForTrack(noteMapping.r);
-        if (trackClip == -1) {
-            log("launching clip on track " + noteMapping.r + ", clip " + noteMapping.c);
-            handlePlay(noteMapping.r, noteMapping.c);
-        } else {
-            // this track is already playing a clip.  stop playing if the pad pressed matches
-            // the playing clip otherwise launch a new clip on the track.
-            if (trackClip == noteMapping.c) {
-                log("stopping track " + noteMapping.r + ", clip " + noteMapping.c);
-                handleStop(noteMapping.r, noteMapping.c);
-            } else {
-                log("track " + noteMapping.r + " already playing clip " + trackClip
-                    + ", launching new clip " + noteMapping.c);
+        if (launcher) {
+            var trackClip = nanoPAD2.playstateForTrack(noteMapping.r);
+            if (trackClip == -1) {
+                log("launching clip on track " + noteMapping.r + ", clip " + noteMapping.c);
                 handlePlay(noteMapping.r, noteMapping.c);
+            } else {
+                // this track is already playing a clip.  stop playing if the pad pressed matches
+                // the playing clip otherwise launch a new clip on the track.
+                if (trackClip == noteMapping.c) {
+                    log("stopping track " + noteMapping.r + ", clip " + noteMapping.c);
+                    handleStop(noteMapping.r, noteMapping.c);
+                } else {
+                    log("track " + noteMapping.r + " already playing clip " + trackClip
+                        + ", launching new clip " + noteMapping.c);
+                    handlePlay(noteMapping.r, noteMapping.c);
+                }
             }
         }
     }

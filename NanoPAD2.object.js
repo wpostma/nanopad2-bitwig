@@ -226,7 +226,7 @@ NanoPAD2.prototype.getControllerMode = function(isChannelController, data1, data
             this.host.showPopupNotification("Clip Mode");
             mode = this.CLIP_MODE;
         } else {
-            log("status is control change but not CC2");
+            //log("status is control change but not CC2");
             mode = this.mode;    
         }
     } else {
