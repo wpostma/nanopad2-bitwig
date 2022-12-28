@@ -17,19 +17,9 @@ Use the scene button on the nanoPAD2 to control clips on track 1 and 2
 In scene mode, the top row of scene 1 on the nanoPAD2 will start/stop all
 clips in a scene but otherwise this mode functions the same as clip mode.
 
-A detailed how-to is available at https://factotumo.com/2015/11/bitwig-korg-nanopad2-script-how-to/.
-
-To install, copy the "Factotumo" folder to Bitwig's contoller scripts
-directory.
-
-Or you can grab the latest release zip at
-
-https://github.com/benschmaus/nanopad2-bitwig/releases
-
-Unzip the nanopad2-bitwig zip file to Bitwig's controller scripts directory.
-
-On OS X this is *~/Documents/Bitwig Studio/Controller Scripts*.
 
 More on installation at: [https://www.bitwig.com/en/community/control_scripts/installation_guide](https://www.bitwig.com/en/community/control_scripts/installation_guide)
 
-Feedback welcome at benjamin.schmaus@gmail.com.
+
+This fork found at https://github.com/wpostma/nanopad2-bitwig
+

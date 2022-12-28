@@ -11,6 +11,7 @@ function NanoPAD2(host, mainTrackBank, log, config) {
     this.mainTrackBank = mainTrackBank;
     this.transport = host.createTransport();
     this.log = log;
+    this.launcher= 1;
 
     if (config == undefined) {
         log("config not passed into constructor so initializing");
@@ -169,9 +170,73 @@ NanoPAD2.prototype.isClipMode = function() {
     return (this.mode == this.CLIP_MODE) ? true : false;
 }
 
-NanoPAD2.prototype.updateMode = function(isChannelController, data1, data2) {
-    this.mode = this.getControllerMode(isChannelController, data1, data2);
 
+NanoPAD2.prototype.handlePlay = function(row, column) {
+    if (this.isClipMode()) {
+        mainTrackBank.getChannel(row).getClipLauncherSlots().launch(column);
+    } else {
+        // in scene mode the 1st row (top row in scene 1 on nano) controls scenes in Bitwig
+        if (row == 0) {
+            log("in scene mode and row 0, launching scene " + column);
+            mainTrackBank.launchScene(column);
+        } else {
+            mainTrackBank.getChannel(row).getClipLauncherSlots().launch(column);
+        }
+    }
+}
+
+NanoPAD2.prototype.handleStop = function(row, column) {
+    if (nanoPAD2.isClipMode()) {
+        mainTrackBank.getChannel(row).getClipLauncherSlots().stop();
+    } else {
+        // in scene mode the 1st row (top row in scene 1 on nano) controls scenes in Bitwig
+        if (row == 0) {
+            log("in scene mode and row 0, stopping all clips in scene " + column);
+            // in scene mode for a stop we need to stop playback on all channels
+            for (var i = 0; i < nanoPAD2.config.NUM_TRACKS; i++) {
+                if (nanoPAD2.trackClipHasContent(i, column)) {
+                    log("clip " + column + " in track " + i + " has content so stopping");
+                    mainTrackBank.getChannel(i).getClipLauncherSlots().stop();
+                } else {
+                    log("clip " + column + " in track " + i + " doesn't have content so not stopping");
+                }
+            }
+        } else {
+            mainTrackBank.getChannel(row).getClipLauncherSlots().stop();
+        }
+    }   
+}
+
+NanoPAD2.prototype.handleMidi  = function(status, data1, data2) {
+    // update mode.
+    this.mode = this.getControllerMode(status, data1, data2);
+ // we use note on messages from the nanoPAD2 to control clip launching
+    if (status == 0x90) {
+        log("note "+data1)
+        nanoPAD2.updateLastNotePlayed(data1);
+        var noteMapping = nanoPAD2.gridLocationForNote(data1);
+        log("note number " + data1 + " ON: grid location: row="
+            + noteMapping.r + ", col=" + noteMapping.c);
+        
+        if (this.launcher) {
+            var trackClip = this.playstateForTrack(noteMapping.r);
+            if (trackClip == -1) {
+                log("launching clip on track " + noteMapping.r + ", clip " + noteMapping.c);
+                this.handlePlay(noteMapping.r, noteMapping.c);
+            } else {
+                // this track is already playing a clip.  stop playing if the pad pressed matches
+                // the playing clip otherwise launch a new clip on the track.
+                if (trackClip == noteMapping.c) {
+                    log("stopping track " + noteMapping.r + ", clip " + noteMapping.c);
+                    this.handleStop(noteMapping.r, noteMapping.c);
+                } else {
+                    log("track " + noteMapping.r + " already playing clip " + trackClip
+                        + ", launching new clip " + noteMapping.c);
+                    this.handlePlay(noteMapping.r, noteMapping.c);
+                }
+            }
+        }
+    }
 }
 
 NanoPAD2.prototype.updateLastNotePlayed = function(noteNumber) {
@@ -216,8 +281,10 @@ NanoPAD2.prototype.handleSceneSelect = function(sysex) {
     }
 }
 
-NanoPAD2.prototype.getControllerMode = function(isChannelController, data1, data2) {
+NanoPAD2.prototype.getControllerMode = function(status, data1, data2) {
     var mode = this.mode;
+    var isChannelController = (status == CC_MSG);
+    
     if (isChannelController) {
         if ((data1 == 0x02) && (data2 > 0x50)) {
             this.host.showPopupNotification("Scene Mode");
@@ -230,7 +297,7 @@ NanoPAD2.prototype.getControllerMode = function(isChannelController, data1, data
             mode = this.mode;    
         }
     } else {
-        log("status not control change message, no mode change");
+        // log("status not control change message, no mode change");
         mode = this.mode;
     }
     log("nano mode is " + (mode == this.CLIP_MODE ? "clip" : "scene"));
