@@ -1,26 +1,25 @@
 /*
 
-This script is for Korg's nanoPAD2 controller.  It enables you to
-use the nanoPAD2 to start/stop clips from the clip launcher in
-Bitwig Studio.
+This is Warren Postma's attempted 2022 rework of Factotumo's nanopad2 script.
 
-More at README.
+THis is the main script.
 
 */
 
 loadAPI(1);
 
+load("NanoPAD2.consts.js");
 load("NanoPAD2.object.js");
 
 host.defineController(
-    "Factotumo", "nanoPAD2 Clip Launcher",
-    "1.0", "ae945665-8dd6-4615-8294-fc06e4a02c0b"
+    "Korg", "nanoPAD2 2022",
+    "1.0", "de945665-7dd6-4615-8294-fc06e4a02c0b"
 );
 
 host.defineMidiPorts(1,0);
 
 // set to 1 to enable console logging
-var enableDebugLogging = 0;
+var enableDebugLogging = 1;
 
 var nanoPAD2;
 

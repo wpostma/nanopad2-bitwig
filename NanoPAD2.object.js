@@ -86,9 +86,9 @@ NanoPAD2.prototype.playbackStateObserver = function(rowIndex, slotIndex, playbac
 }
 
 NanoPAD2.prototype.hasContentObserver = function(rowIndex, slotIndex, hasClip) {
-    log("setting clip content for row, column "
-        + rowIndex + ", " + slotIndex
-        + " from " + this.trackClipContents[rowIndex][slotIndex] + " to " + hasClip);
+   // log("setting clip content for row, column "
+   //     + rowIndex + ", " + slotIndex
+   //     + " from " + this.trackClipContents[rowIndex][slotIndex] + " to " + hasClip);
     this.trackClipContents[rowIndex][slotIndex] = hasClip;
 }
 
